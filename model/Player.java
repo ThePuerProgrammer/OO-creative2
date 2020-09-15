@@ -4,6 +4,9 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 
 public class Player {
+
+    Color color;
+
     public class startPos {
         public int x = 0;
         public int y = 0;
@@ -17,6 +20,7 @@ public class Player {
 
     public Player() {
         pos = new startPos(10, 770);
+        color = Color.RED;
     }
 
     public int getX() {
@@ -32,8 +36,12 @@ public class Player {
         pos.y = y;
     }
 
+    public void updateColor(Color color) {
+        this.color = color;
+    }
+
     public void render(Graphics2D g2D) {
-        g2D.setColor(Color.RED);
+        g2D.setColor(color);
         g2D.fillRect(pos.x, pos.y, 20, 20);
     }
 }

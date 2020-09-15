@@ -11,6 +11,7 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 
 public class GameCanvas extends JPanel {
+    private static final long serialVersionUID = 1L;
     private GameView gameView;
     public Player player;
 
