@@ -5,54 +5,44 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import model.Player;
+import view.GameCanvas;
+import view.GameView;
+
 public class GameScreenListener implements KeyListener, MouseListener {
+    private GameView gameView;
+    private GameCanvas gameCanvas;
+
+    public GameScreenListener(GameView gameView) {
+        this.gameView = gameView;
+        gameCanvas = gameView.getCanvas();
+    }
 
     @Override
-    public void keyTyped(KeyEvent e) {
-        // TODO Auto-generated method stub
-
+    public void mousePressed(MouseEvent e) {    
+        gameView.jump();
     }
+
+    @Override
+    public void keyTyped(KeyEvent e) {}
 
     @Override
     public void keyPressed(KeyEvent e) {
-        // TODO Auto-generated method stub
-
+        System.out.println("Pressed");
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {
-        // TODO Auto-generated method stub
-
-    }
+    public void keyReleased(KeyEvent e) {}
 
     @Override
-    public void mouseClicked(MouseEvent e) {
-        // TODO Auto-generated method stub
-
-    }
+    public void mouseClicked(MouseEvent e) {}
 
     @Override
-    public void mousePressed(MouseEvent e) {
-        // TODO Auto-generated method stub
-
-    }
+    public void mouseReleased(MouseEvent e) {}
 
     @Override
-    public void mouseReleased(MouseEvent e) {
-        // TODO Auto-generated method stub
-
-    }
+    public void mouseEntered(MouseEvent e) {}
 
     @Override
-    public void mouseEntered(MouseEvent e) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-        // TODO Auto-generated method stub
-
-    }
-
+    public void mouseExited(MouseEvent e) {}
 }

@@ -29,7 +29,7 @@ public class MainMenu {
         JButton start = new JButton("Start");
         start.setPreferredSize(buttonSize);
         mPanel.add(start);
-        JButton quit = new JButton("Quit");
+        JButton quit = new JButton("Exit");
         quit.setPreferredSize(buttonSize);
         mPanel.add(quit);
 
@@ -41,6 +41,10 @@ public class MainMenu {
             window.pack();
             window.setLocationRelativeTo(null);
             window.revalidate();
+        });
+
+        quit.addActionListener( e -> {
+            System.exit(0);
         });
     }
 }
