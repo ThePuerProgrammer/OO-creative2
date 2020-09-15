@@ -13,7 +13,7 @@ public class MainMenu {
 
     public MainMenu(JFrame window) {
         this.window = window;
-        window.setTitle("Climber");
+        window.setTitle("Main Menu");
     }
 
     public void init() {
@@ -32,7 +32,6 @@ public class MainMenu {
         JButton quit = new JButton("Exit");
         quit.setPreferredSize(buttonSize);
         mPanel.add(quit);
-
 
         start.addActionListener( e -> {
             window.getContentPane().removeAll();

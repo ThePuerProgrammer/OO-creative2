@@ -1,5 +1,6 @@
 import javax.swing.JFrame;
 
+import view.GameView;
 import view.MainMenu;
 
 public class Main {
@@ -7,10 +8,11 @@ public class Main {
         JFrame window = new JFrame();
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        MainMenu mainMenu = new MainMenu(window);
-        mainMenu.init();
+        GameView game = new GameView(window);
+        game.init();
         window.pack();
         window.setLocationRelativeTo(null);
+        window.setResizable(false);
         window.setVisible(true);
     }
 }

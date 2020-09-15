@@ -1,3 +1,6 @@
+// certain game loop timing elements for setting FPS 
+// adapted from Patrick Feltes Java 2D platformer tutorial
+// https://youtu.be/OCcZUO4Zf6o
 package view;
 
 import javax.swing.JFrame;
@@ -7,102 +10,190 @@ import controller.GameScreenListener;
 import model.Player;
 
 import java.awt.Container;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.util.concurrent.TimeUnit;
 
 public class GameView implements Runnable {
     private JFrame window;
     private GameCanvas canvas;
     private boolean running = false;
+    final private int HEIGHT = 400;
+    final private int WIDTH = 800;
+    final private int fps = 60;
+    final private int time = 1000 / fps;
+    private Thread thread;
+    private Player player;
+    private int jumpHeight = 0;
+    private int jumpStart = 0;
+    private boolean jumping = false;
+    private boolean falling = false;
+    private boolean left = false;
+    private int xSpeed = 0;
+    private int decel = 0;
+    private int accel = 0;
 
     public GameView(JFrame window) {
         this.window = window;
-        window.setTitle("Climber");
+        window.setTitle("Generic Platformer With Red Square Man");
         window.setResizable(false);
+        window.setFocusable(true);
+        window.requestFocus();
     }
 
     public void init() {
         Container contentPane = window.getContentPane();
         JPanel panel = new JPanel();
-        panel.setPreferredSize(new Dimension(800, 800));
+        panel.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         contentPane.add(panel);
 
         canvas = new GameCanvas(this);
         contentPane.add(canvas);
 
         GameScreenListener gSL = new GameScreenListener(this);
-        canvas.addMouseListener(gSL);
-
+        window.addKeyListener(gSL);
+    }
+    
+    public void start() {
+        player = canvas.getPlayer();
         running = true;
-        run();
-        // game over
+        thread = new Thread(this);
+        thread.start();
     }
 
-    public void jump() {
-        // Color color = canvas.getBackground();
-        // Player player = canvas.getPlayer();
-        // int playerY = player.getY();
-        // int sleepTime = 10;
-        // int x = 5;
-        // int y = 20;
-        // while (true) {
-        //     player.updateColor(color);
-        //     canvas.paintImmediately(player.getX(), player.getY(), 20, 20);
-        //     player.updateColor(Color.RED);
-        //     player.updatePos(player.getX() + x, player.getY() - y);
-        //     canvas.paintImmediately(player.getX(), player.getY(), 20, 20);
-        //     if (player.getY() == playerY - 210) {
-        //         break;
-        //     }
-        //     y -= 1;
-        //     try {
-        //         Thread.sleep(sleepTime);
-        //     } catch (InterruptedException e) {
-        //         System.out.println("caught");
-        //     }
-        // }
-        // canvas.repaint();
-        // playerY = player.getY();
-        // y = 1;
-        // while (true) {
-        //     player.updateColor(color);
-        //     canvas.paintImmediately(player.getX(), player.getY(), 20, 20);
-        //     player.updateColor(Color.RED);
-        //     player.updatePos(player.getX() + x, player.getY() + y);
-        //     canvas.paintImmediately(player.getX(), player.getY(), 20, 20);
-        //     if (player.getY() == playerY + 210) {
-        //         break;
-        //     }
-        //     y += 1;
-        //     try {
-        //         Thread.sleep(sleepTime);
-        //     } catch (InterruptedException e) {
-        //         System.out.println("caught");
-        //     }
-        // }
-        // if (player.getX() > 800 || player.getX() < 0 || player.getY() > 800 || player.getX() < 0) {
-        //     player.updatePos(10, 770);
-        //     canvas.repaint();
-        //     canvas.paintImmediately(player.getX(), player.getY(), 20, 20);
-        // }
+    public void stop() {
+        running = false;
     }
 
     public GameCanvas getCanvas() {
         return canvas;
     }
 
+    // game loop
     @Override
     public void run() {
         while (running) {
             
-
+            // To aim for consistent FPS
+            long nano = System.nanoTime();
+            
             tick();
-            canvas.repaint();
+            canvas.repaint(0, 0, WIDTH, HEIGHT);
+
+            long updated = System.nanoTime() - nano;
+            long buffer = time - updated / 1_000_000;
+
+            if (buffer <= 0) {
+                buffer = 5;
+            }
+
+            try {
+                Thread.sleep(buffer);
+            } catch (Exception e) {
+                System.out.println("Caught Exception");
+            }
+
         }
     }
 
     private void tick() {
+        if (jumping) {
+            jumping = jump();
+        } else if (falling) {
+            falling = fall();
+        }
+    }
 
+
+    private boolean jump() {
+        if (left) {
+            player.updatePos(player.getX() - xSpeed, player.getY() - decel);
+            decel -= 1;
+            if (player.getY() <= jumpHeight) {
+                falling = true;
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            player.updatePos(player.getX() + xSpeed, player.getY() - decel);
+            decel -= 1;
+            if (player.getY() <= jumpHeight) {
+                falling = true;
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }
+
+    private boolean fall() {
+        if (left) {
+            player.updatePos(player.getX() - xSpeed, player.getY() + accel);
+            accel += 1;
+            if (player.getY() >= jumpStart) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            player.updatePos(player.getX() + xSpeed, player.getY() + accel);
+            accel += 1;
+            if (player.getY() >= jumpStart) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }
+
+    public int getHeight() {
+        return HEIGHT;
+    }
+
+    public int getWIDTH() {
+        return WIDTH;
+    }
+
+    public JFrame getWindow() {
+        return window;
+    }
+
+    public void setLeft(boolean left) {
+        this.left = left;
+    }
+
+    public void setJumpHeight(int jumpHeight) {
+        this.jumpHeight = jumpHeight;
+    }
+
+    public void setJumpStart(int jumpStart) {
+        this.jumpStart = jumpStart;
+    }
+
+    public void setXSpeed(int xSpeed) {
+        this.xSpeed = xSpeed;
+    }
+
+    public void setJumping(boolean jumping) {
+        this.jumping = jumping;
+    }
+
+    public void setDecel(int decel) {
+        this.decel = decel;
+    }
+
+    public void setAccel(int accel) {
+        this.accel = accel;
+    }
+
+    public boolean getFalling() {
+        return falling;
+    }
+
+    public boolean getJumping() {
+        return jumping;
+    }
+
+    public boolean getRunning() {
+        return running;
     }
 }

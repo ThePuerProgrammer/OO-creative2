@@ -19,7 +19,7 @@ public class Player {
     startPos pos;
 
     public Player() {
-        pos = new startPos(10, 770);
+        pos = new startPos(200, 350); // init pos
         color = Color.RED;
     }
 
