@@ -1,7 +1,6 @@
 import javax.swing.JFrame;
 
 import view.GameView;
-import view.MainMenu;
 
 public class Main {
     public static void main(String[] args) {

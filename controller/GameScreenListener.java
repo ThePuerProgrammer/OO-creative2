@@ -3,27 +3,22 @@ package controller;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-import javax.swing.JFrame;
 import model.Player;
-
-import java.awt.Graphics2D;
 
 import view.GameCanvas;
 import view.GameView;
-import view.MainMenu;
 
 public class GameScreenListener implements KeyListener {
     private GameView gameView;
     private GameCanvas gameCanvas;
-    private Graphics2D g2D;
     private Player player;
     final private int xSpeed = 10;
     private boolean left = false;
+    private boolean right = false;
 
     public GameScreenListener(GameView gameView) {
         this.gameView = gameView;
         gameCanvas = gameView.getCanvas();
-        g2D = gameCanvas.getG2D();
         player = gameCanvas.getPlayer();
     }
 
@@ -47,8 +42,6 @@ public class GameScreenListener implements KeyListener {
                     // jump
                     if (!gameView.getFalling() && !gameView.getJumping()) {
                         gameView.setJumpHeight(player.getY() - 210);
-                        gameView.setJumpStart(player.getY());
-                        gameView.setXSpeed(xSpeed);
                         gameView.setJumping(true);
                         gameView.setAccel(1);
                         gameView.setDecel(20);
@@ -56,12 +49,12 @@ public class GameScreenListener implements KeyListener {
                     break;
                 case 0x25:
                     // go left
-                    player.updatePos(player.getX() - xSpeed, player.getY());
                     left = true;
+                    right = false;
                     break;
                 case 0x27:
                     // go right
-                    player.updatePos(player.getX() + xSpeed, player.getY());
+                    right = true;
                     left = false;
                     break;
                 case 0x50:
@@ -82,11 +75,32 @@ public class GameScreenListener implements KeyListener {
                 default:
                     break;
             }
+            gameView.setXSpeed(xSpeed);
             gameView.setLeft(left);
+            gameView.setRight(right);
         }
-        System.out.println("keyPressed="+KeyEvent.getKeyText(e.getKeyCode()));
+        // System.out.println("keyPressed="+KeyEvent.getKeyText(e.getKeyCode()));
     }
 
     @Override
-    public void keyReleased(KeyEvent e) {}
+    public void keyReleased(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case 0x20:
+                gameView.setJumping(false);
+                break;
+            case 0x25:
+                // stop left
+                left = false;
+                break;
+            case 0x27:
+                // stop right
+                right = false;
+                break;
+            default:
+                break;
+        }
+        gameView.setLeft(left);
+        gameView.setRight(right);
+
+    }
 }

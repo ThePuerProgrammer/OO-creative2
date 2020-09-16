@@ -8,32 +8,43 @@ import javax.swing.JPanel;
 
 import controller.GameScreenListener;
 import model.Player;
+import model.Block;
 
 import java.awt.Container;
 import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.Random;
 
 public class GameView implements Runnable {
+
+    final static public int HEIGHT = 400;
+    final static public int WIDTH = 800;
+
     private JFrame window;
     private GameCanvas canvas;
+
     private boolean running = false;
-    final private int HEIGHT = 400;
-    final private int WIDTH = 800;
     final private int fps = 60;
     final private int time = 1000 / fps;
     private Thread thread;
+
     private Player player;
+    private Block floor;
+
     private int jumpHeight = 0;
-    private int jumpStart = 0;
     private boolean jumping = false;
-    private boolean falling = false;
+    private boolean falling = true;
     private boolean left = false;
+    private boolean right = false;
     private int xSpeed = 0;
     private int decel = 0;
     private int accel = 0;
+    
+    private ArrayList<Block> blocks;
 
     public GameView(JFrame window) {
         this.window = window;
-        window.setTitle("Generic Platformer With Red Square Man");
+        window.setTitle("The Game With No Name");
         window.setResizable(false);
         window.setFocusable(true);
         window.requestFocus();
@@ -54,6 +65,7 @@ public class GameView implements Runnable {
     
     public void start() {
         player = canvas.getPlayer();
+        floor = canvas.getBlock();
         running = true;
         thread = new Thread(this);
         thread.start();
@@ -90,58 +102,109 @@ public class GameView implements Runnable {
             } catch (Exception e) {
                 System.out.println("Caught Exception");
             }
-
         }
     }
 
     private void tick() {
+
+        // vertical movement
         if (jumping) {
             jumping = jump();
-        } else if (falling) {
-            falling = fall();
+        } else {
+            fall();
+        }
+
+        // horizontal movement
+        if (left) {
+            goLeft();
+        } else if (right) {
+            goRight();
         }
     }
 
 
     private boolean jump() {
-        if (left) {
-            player.updatePos(player.getX() - xSpeed, player.getY() - decel);
-            decel -= 1;
-            if (player.getY() <= jumpHeight) {
-                falling = true;
-                return false;
-            } else {
-                return true;
+        player.updatePos(player.getX(), player.getY() - decel);
+        decel -= 1;
+        boolean breakout = false;
+        for (var each: blocks) {
+            while (player.getBounary().intersects(each.getBounary())) {
+                breakout = true;
+                player.updatePos(player.getX(), player.getY() + 1);
             }
+            if (breakout) return false;
+        }
+        if (player.getY() <= jumpHeight) {
+            return false;
         } else {
-            player.updatePos(player.getX() + xSpeed, player.getY() - decel);
-            decel -= 1;
-            if (player.getY() <= jumpHeight) {
-                falling = true;
-                return false;
-            } else {
-                return true;
-            }
+            return true;
         }
     }
 
-    private boolean fall() {
-        if (left) {
-            player.updatePos(player.getX() - xSpeed, player.getY() + accel);
-            accel += 1;
-            if (player.getY() >= jumpStart) {
-                return false;
-            } else {
-                return true;
+    private void fall() {
+        player.updatePos(player.getX(), player.getY() + accel);
+        accel += 1;
+        falling = true;
+        if (accel > 20) accel = 20;
+        boolean breakout = false;
+        for (var each: blocks) {
+            while (player.getBounary().intersects(each.getBounary()) || player.getBounary().intersects(floor.getBounary())) {
+                player.updatePos(player.getX(), player.getY() - 1);
+                breakout = true;
+                accel = 1;
+                falling = false;
             }
+            if (breakout) break;
+        }
+    }
+
+    private void goLeft() {
+        boolean playerMovable = player.getX() > WIDTH / 3;
+        if (playerMovable) {
+            player.updatePos(player.getX() - xSpeed, player.getY());
         } else {
-            player.updatePos(player.getX() + xSpeed, player.getY() + accel);
-            accel += 1;
-            if (player.getY() >= jumpStart) {
-                return false;
-            } else {
-                return true;
+            for (var each: blocks) {
+                each.updatePos(each.getX() + xSpeed, each.getY());
             }
+        }
+        boolean breakout = false;
+        for (var each: blocks) {
+            while (player.getBounary().intersects(each.getBounary())) {
+                breakout = true;
+                if (playerMovable) {
+                    player.updatePos(player.getX() + 1, player.getY());
+                } else {
+                    for (var every: blocks) {
+                        every.updatePos(every.getX() - 1, every.getY());
+                    }
+                }
+            }
+            if (breakout) break;
+        }
+    }
+
+    private void goRight() {
+        boolean playerMovable = player.getX() < (WIDTH / 3) * 2;
+        if (playerMovable) {
+            player.updatePos(player.getX() + xSpeed, player.getY());
+        } else {
+            for (var each: blocks) {
+                each.updatePos(each.getX() - xSpeed, each.getY());
+            }
+        }
+        boolean breakout = false;
+        for (var each: blocks) {
+            while (player.getBounary().intersects(each.getBounary())) {
+                breakout = true;
+                if (playerMovable) {
+                    player.updatePos(player.getX() - 1, player.getY());
+                } else {
+                    for (var every: blocks) {
+                        every.updatePos(every.getX() +1, every.getY());
+                    }
+                }
+            }
+            if (breakout) break;
         }
     }
 
@@ -161,12 +224,12 @@ public class GameView implements Runnable {
         this.left = left;
     }
 
-    public void setJumpHeight(int jumpHeight) {
-        this.jumpHeight = jumpHeight;
+    public void setRight(boolean right) {
+        this.right = right;
     }
 
-    public void setJumpStart(int jumpStart) {
-        this.jumpStart = jumpStart;
+    public void setJumpHeight(int jumpHeight) {
+        this.jumpHeight = jumpHeight;
     }
 
     public void setXSpeed(int xSpeed) {
