@@ -1,5 +1,4 @@
-// certain game loop timing elements for setting FPS 
-// adapted from Patrick Feltes Java 2D platformer tutorial
+// certain game loop timing elements adapted from Patrick Feltes
 // https://youtu.be/OCcZUO4Zf6o
 package view;
 
@@ -8,20 +7,23 @@ import javax.swing.JPanel;
 
 import controller.GameScreenListener;
 import model.Player;
+import model.Wall;
 import model.Block;
+import model.Environment;
+import model.Floor;
+import model.LandscapeBuilder;
 
 import java.awt.Container;
 import java.awt.Dimension;
 import java.util.ArrayList;
-import java.util.Random;
 
 public class GameView implements Runnable {
 
-    final static public int HEIGHT = 400;
+    final static public int HEIGHT = 800;
     final static public int WIDTH = 800;
 
     private JFrame window;
-    private GameCanvas canvas;
+    private GameCanvas gameCanvas;
 
     private boolean running = false;
     final private int fps = 60;
@@ -29,22 +31,26 @@ public class GameView implements Runnable {
     private Thread thread;
 
     private Player player;
-    private Block floor;
 
     private int jumpHeight = 0;
     private boolean jumping = false;
     private boolean falling = true;
     private boolean left = false;
     private boolean right = false;
-    private int xSpeed = 0;
+    private int xSpeed = 10;
     private int decel = 0;
     private int accel = 0;
+    private boolean up = true;
+
+    private LandscapeBuilder landscape;
     
     private ArrayList<Block> blocks;
+    private ArrayList<Wall> walls;
+    private ArrayList<Floor> floors;
 
     public GameView(JFrame window) {
         this.window = window;
-        window.setTitle("The Game With No Name");
+        window.setTitle("Generic Platform Physics Demo");
         window.setResizable(false);
         window.setFocusable(true);
         window.requestFocus();
@@ -55,17 +61,20 @@ public class GameView implements Runnable {
         JPanel panel = new JPanel();
         panel.setPreferredSize(new Dimension(WIDTH, HEIGHT));
         contentPane.add(panel);
-
-        canvas = new GameCanvas(this);
-        contentPane.add(canvas);
-
+        gameCanvas = new GameCanvas(this);
+        contentPane.add(gameCanvas);
         GameScreenListener gSL = new GameScreenListener(this);
         window.addKeyListener(gSL);
+        gameCanvas.addMouseListener(gSL);
+        landscape = new LandscapeBuilder(gameCanvas);
+        blocks = gameCanvas.getBlocks();
+        walls = gameCanvas.getWalls();
+        floors = gameCanvas.getFloors();
+        landscape.buildLandscape();
+        player = gameCanvas.getPlayer();
     }
     
     public void start() {
-        player = canvas.getPlayer();
-        floor = canvas.getBlock();
         running = true;
         thread = new Thread(this);
         thread.start();
@@ -76,31 +85,27 @@ public class GameView implements Runnable {
     }
 
     public GameCanvas getCanvas() {
-        return canvas;
+        return gameCanvas;
     }
 
     // game loop
     @Override
     public void run() {
         while (running) {
-            
             // To aim for consistent FPS
             long nano = System.nanoTime();
-            
             tick();
-            canvas.repaint(0, 0, WIDTH, HEIGHT);
-
+            gameCanvas.repaint(0, 0, WIDTH, HEIGHT);
             long updated = System.nanoTime() - nano;
             long buffer = time - updated / 1_000_000;
-
             if (buffer <= 0) {
                 buffer = 5;
             }
-
             try {
                 Thread.sleep(buffer);
             } catch (Exception e) {
-                System.out.println("Caught Exception");
+                System.out.println("Caught Exception - Thread.sleep(buffer)");
+                System.exit(1);
             }
         }
     }
@@ -124,17 +129,82 @@ public class GameView implements Runnable {
 
 
     private boolean jump() {
-        player.updatePos(player.getX(), player.getY() - decel);
+        boolean playerMovable = player.getY() > HEIGHT / 4;
+        if (playerMovable) {
+            player.updatePos(player.getX(), player.getY() - decel);
+        } else {
+            for (var each: blocks) {
+                each.updatePos(each.getX(), each.getY() + decel);
+            }
+            for (var each: floors) {
+                each.updatePos(each.getX(), each.getY() + decel);
+            }
+            for (var each: walls) {
+                each.updatePos(each.getX(), each.getY() + decel);
+            }
+        }
         decel -= 1;
         boolean breakout = false;
         for (var each: blocks) {
             while (player.getBounary().intersects(each.getBounary())) {
                 breakout = true;
-                player.updatePos(player.getX(), player.getY() + 1);
+                if (playerMovable) {
+                    player.updatePos(player.getX(), player.getY() + 1);
+                } else {
+                    for (var every: blocks) {
+                        every.updatePos(every.getX(), every.getY() - 1);
+                    }
+                    for (var every: floors) {
+                        every.updatePos(every.getX(), every.getY() - 1);
+                    }
+                    for (var every: walls) {
+                        every.updatePos(every.getX(), every.getY() - 1);
+                    }
+                }
             }
             if (breakout) return false;
         }
-        if (player.getY() <= jumpHeight) {
+        breakout = false;
+        for (var each: floors) {
+            while (player.getBounary().intersects(each.getBounary())) {
+                breakout = true;
+                if (playerMovable) {
+                    player.updatePos(player.getX(), player.getY() + 1);
+                } else {
+                    for (var every: blocks) {
+                        every.updatePos(every.getX(), every.getY() - 1);
+                    }
+                    for (var every: floors) {
+                        every.updatePos(every.getX(), every.getY() - 1);
+                    }
+                    for (var every: walls) {
+                        every.updatePos(every.getX(), every.getY() - 1);
+                    }
+                }
+            }
+            if (breakout) return false;
+        }
+        breakout = false;
+        for (var each: walls) {
+            while (player.getBounary().intersects(each.getBounary())) {
+                breakout = true;
+                if (playerMovable) {
+                    player.updatePos(player.getX(), player.getY() + 1);
+                } else {
+                    for (var every: blocks) {
+                        every.updatePos(every.getX(), every.getY() - 1);
+                    }
+                    for (var every: floors) {
+                        every.updatePos(every.getX(), every.getY() - 1);
+                    }
+                    for (var every: walls) {
+                        every.updatePos(every.getX(), every.getY() - 1);
+                    }
+                }
+            }
+            if (breakout) return false;
+        }
+        if (decel == 0) {
             return false;
         } else {
             return true;
@@ -142,19 +212,93 @@ public class GameView implements Runnable {
     }
 
     private void fall() {
-        player.updatePos(player.getX(), player.getY() + accel);
+        boolean playerMovable = player.getY() < (HEIGHT / 4) * 3;
+        if (playerMovable) {
+            player.updatePos(player.getX(), player.getY() + accel);
+        } else {
+            for (var each: blocks) {
+                each.updatePos(each.getX(), each.getY() - accel);
+            }
+            for (var each: floors) {
+                each.updatePos(each.getX(), each.getY() - accel);
+            }
+            for (var each: walls) {
+                each.updatePos(each.getX(), each.getY() - accel);
+            }
+        }
         accel += 1;
         falling = true;
         if (accel > 20) accel = 20;
         boolean breakout = false;
         for (var each: blocks) {
-            while (player.getBounary().intersects(each.getBounary()) || player.getBounary().intersects(floor.getBounary())) {
-                player.updatePos(player.getX(), player.getY() - 1);
+            while (player.getBounary().intersects(each.getBounary())) {
+                if (playerMovable) {
+                    player.updatePos(player.getX(), player.getY() - 1);
+                } else {
+                    for (var every: blocks) {
+                        every.updatePos(every.getX(), every.getY() + 1);
+                    }
+                    for (var every: walls) {
+                        every.updatePos(every.getX(), every.getY() + 1);
+                    }
+                    for (var every: floors) {
+                        every.updatePos(every.getX(), every.getY() + 1);
+                    }
+                }
                 breakout = true;
                 accel = 1;
                 falling = false;
             }
             if (breakout) break;
+        }
+        breakout = false;
+        for (var each: walls) {
+            while (player.getBounary().intersects(each.getBounary())) {
+                if (playerMovable) {
+                    player.updatePos(player.getX(), player.getY() - 1);
+                } else {
+                    for (var every: blocks) {
+                        every.updatePos(every.getX(), every.getY() + 1);
+                    }
+                    for (var every: walls) {
+                        every.updatePos(every.getX(), every.getY() + 1);
+                    }
+                    for (var every: floors) {
+                        every.updatePos(every.getX(), every.getY() + 1);
+                    }
+                }
+                breakout = true;
+                accel = 1;
+                falling = false;
+            }
+            if (breakout) break;
+        }
+        breakout = false;
+        for (var each: floors) {
+            while (player.getBounary().intersects(each.getBounary())) {
+                if (playerMovable) {
+                    player.updatePos(player.getX(), player.getY() - 1);
+                } else {
+                    for (var every: blocks) {
+                        every.updatePos(every.getX(), every.getY() + 1);
+                    }
+                    for (var every: walls) {
+                        every.updatePos(every.getX(), every.getY() + 1);
+                    }
+                    for (var every: floors) {
+                        every.updatePos(every.getX(), every.getY() + 1);
+                    }
+                }
+                breakout = true;
+                accel = 1;
+                falling = false;
+            }
+            if (breakout) break;
+        }
+        if (player.getY() > HEIGHT) {
+            player.resetStart();
+            blocks.clear();
+            landscape.buildLandscape();
         }
     }
 
@@ -166,6 +310,12 @@ public class GameView implements Runnable {
             for (var each: blocks) {
                 each.updatePos(each.getX() + xSpeed, each.getY());
             }
+            for (var each: walls) {
+                each.updatePos(each.getX() + xSpeed, each.getY());
+            }
+            for (var each: floors) {
+                each.updatePos(each.getX() + xSpeed, each.getY());
+            }
         }
         boolean breakout = false;
         for (var each: blocks) {
@@ -175,6 +325,12 @@ public class GameView implements Runnable {
                     player.updatePos(player.getX() + 1, player.getY());
                 } else {
                     for (var every: blocks) {
+                        every.updatePos(every.getX() - 1, every.getY());
+                    }
+                    for (var every: walls) {
+                        every.updatePos(every.getX() - 1, every.getY());
+                    }
+                    for (var every: floors) {
                         every.updatePos(every.getX() - 1, every.getY());
                     }
                 }
@@ -191,6 +347,12 @@ public class GameView implements Runnable {
             for (var each: blocks) {
                 each.updatePos(each.getX() - xSpeed, each.getY());
             }
+            for (var each: walls) {
+                each.updatePos(each.getX() - xSpeed, each.getY());
+            }
+            for (var each: floors) {
+                each.updatePos(each.getX() - xSpeed, each.getY());
+            }
         }
         boolean breakout = false;
         for (var each: blocks) {
@@ -200,6 +362,12 @@ public class GameView implements Runnable {
                     player.updatePos(player.getX() - 1, player.getY());
                 } else {
                     for (var every: blocks) {
+                        every.updatePos(every.getX() +1, every.getY());
+                    }
+                    for (var every: walls) {
+                        every.updatePos(every.getX() +1, every.getY());
+                    }
+                    for (var every: floors) {
                         every.updatePos(every.getX() +1, every.getY());
                     }
                 }
@@ -258,5 +426,17 @@ public class GameView implements Runnable {
 
     public boolean getRunning() {
         return running;
+    }
+
+    public void addBlock(int x, int y) {
+        blocks.add(new Block(x,y));
+    }
+
+    public void reset() {
+        blocks.clear();
+        walls.clear();
+        floors.clear();
+        player.resetStart();
+        landscape.buildLandscape();
     }
 }

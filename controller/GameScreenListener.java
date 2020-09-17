@@ -2,19 +2,22 @@ package controller;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import model.Player;
 
 import view.GameCanvas;
 import view.GameView;
 
-public class GameScreenListener implements KeyListener {
+public class GameScreenListener implements KeyListener, MouseListener {
     private GameView gameView;
     private GameCanvas gameCanvas;
     private Player player;
     final private int xSpeed = 10;
     private boolean left = false;
     private boolean right = false;
+    private boolean canJump = true;
 
     public GameScreenListener(GameView gameView) {
         this.gameView = gameView;
@@ -23,7 +26,8 @@ public class GameScreenListener implements KeyListener {
     }
 
     @Override
-    public void keyTyped(KeyEvent e) {}
+    public void keyTyped(KeyEvent e) {
+    }
 
     @Override
     public void keyPressed(KeyEvent e) {
@@ -34,18 +38,21 @@ public class GameScreenListener implements KeyListener {
                 gameCanvas.repaint(0, 0, gameView.getWIDTH(), gameView.getHeight());
                 gameView.start();
             }
-            
+
         } else {
             // Main keyswitch
             switch (e.getKeyCode()) {
                 case 0x20:
                     // jump
-                    if (!gameView.getFalling() && !gameView.getJumping()) {
-                        gameView.setJumpHeight(player.getY() - 210);
-                        gameView.setJumping(true);
-                        gameView.setAccel(1);
-                        gameView.setDecel(20);
+                    if (canJump) {
+                        if (!gameView.getFalling() && !gameView.getJumping()) {
+                            gameView.setJumpHeight(player.getY() - 210);
+                            gameView.setJumping(true);
+                            gameView.setAccel(1);
+                            gameView.setDecel(20);
+                        }
                     }
+                    canJump = false;
                     break;
                 case 0x25:
                     // go left
@@ -72,10 +79,12 @@ public class GameScreenListener implements KeyListener {
                 case 0x51:
                     // quit
                     System.exit(0);
+                    break;
+                case 0x52:
+                    gameView.reset();
                 default:
                     break;
             }
-            gameView.setXSpeed(xSpeed);
             gameView.setLeft(left);
             gameView.setRight(right);
         }
@@ -86,6 +95,7 @@ public class GameScreenListener implements KeyListener {
     public void keyReleased(KeyEvent e) {
         switch (e.getKeyCode()) {
             case 0x20:
+                canJump = true;
                 gameView.setJumping(false);
                 break;
             case 0x25:
@@ -101,6 +111,35 @@ public class GameScreenListener implements KeyListener {
         }
         gameView.setLeft(left);
         gameView.setRight(right);
+
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+        gameView.addBlock(e.getX(), e.getY());
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        // TODO Auto-generated method stub
 
     }
 }
