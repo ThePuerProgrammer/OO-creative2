@@ -39,6 +39,10 @@ public abstract class Environment {
         this.color = color;
     }
 
+    public Color getColor() {
+        return color;
+    }
+
     public void render(Graphics2D g2D, int width, int height) {
         this.width = width;
         this.height = height;

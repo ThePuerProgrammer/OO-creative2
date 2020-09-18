@@ -9,7 +9,7 @@ import view.GameView;
 public class LandscapeBuilder {
     Random random;
     private ArrayList<Block> blocks;
-    private ArrayList<Wall> walls;
+    private ArrayList<Coin> coins;
     private ArrayList<Floor> floors;
     GameCanvas gameCanvas;
 
@@ -22,7 +22,7 @@ public class LandscapeBuilder {
     public LandscapeBuilder(GameCanvas gameCanvas) {
         this.gameCanvas = gameCanvas;
         blocks = this.gameCanvas.getBlocks();
-        walls = this.gameCanvas.getWalls();
+        coins = this.gameCanvas.getCoins();
         floors = this.gameCanvas.getFloors();
         random = new Random();
         wallHeight = gameCanvas.getWallHeight();
@@ -56,19 +56,39 @@ public class LandscapeBuilder {
         }
 
         // floor right of pipe
-        for (int i = 240 * 4; i < 240 * 8; i += 240) {
+        for (int i = 240 * 4; i < 240 * 7; i += 240) {
             floors.add(new Floor(i, GameView.HEIGHT - 400));
         }
 
+        // second wall
+        for (int i = 0, k = 1; i < 7; i++, k += 2) {
+            for (int j = 240 * 6; j < 240 * 8; j += 60)
+                blocks.add(new Block(j, blockWidthHeight / 2 * k));
+        }
 
+        // second platform
+        for (int i = 240 * 4; i > 300; i -= 60) {
+            blocks.add(new Block(i, GameView.HEIGHT));
+        }
 
+        // under wall
+        for (int i = GameView.HEIGHT / 2; i < GameView.HEIGHT * 2; i += 60) {
+            blocks.add(new Block(240, i));
+        }
 
-
+        for (int i = 240; i < 240 * 6; i += 60) {
+            floors.add(new Floor(i, GameView.HEIGHT * 2));
+        }
         
         // staircase code
-        // for (int i = 0, k = GameView.HEIGHT - 200; i < 240 * 10; i += 240, k -= 150) {
-        //     blocks.add(new Block(i, k));
-        // }
+        for (int i = 240, k = GameView.HEIGHT * 2; i < 240 * 11; i += 240, k -= 150) {
+            blocks.add(new Block(i, k));
+        }
+
+        // coins
+        for (int i = 250, k = GameView.HEIGHT * 2 - 60; i < 250 * 11; i += 240, k -= 150) {
+            if (i > 250) coins.add(new Coin(i, k));
+        }
     }
 
     public void randomBlock() {

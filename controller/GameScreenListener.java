@@ -82,6 +82,7 @@ public class GameScreenListener implements KeyListener, MouseListener {
                     break;
                 case 0x52:
                     gameView.reset();
+                    gameCanvas.setCoinCount(0);
                 default:
                     break;
             }

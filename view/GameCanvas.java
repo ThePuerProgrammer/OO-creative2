@@ -5,6 +5,7 @@ import javax.swing.JPanel;
 import model.Player;
 import model.Wall;
 import model.Block;
+import model.Coin;
 import model.Floor;
 
 import java.awt.Color;
@@ -23,6 +24,8 @@ public class GameCanvas extends JPanel {
     private ArrayList<Block> blocks;
     private ArrayList<Wall> walls;
     private ArrayList<Floor> floors;
+    private ArrayList<Coin> coins;
+    private int coinCount = 0;
 
     final private int blockWidth = 60;
     final private int blockHeight = 60;
@@ -37,6 +40,7 @@ public class GameCanvas extends JPanel {
         blocks = new ArrayList<>();
         walls = new ArrayList<>();
         floors = new ArrayList<>();
+        coins = new ArrayList<>();
     }
 
     @Override
@@ -57,12 +61,19 @@ public class GameCanvas extends JPanel {
             each.render(g2D, wallHeight, wallWidth);
         }
 
+        for (var each: coins) {
+            each.render(g2D, 40, 60);
+        }
+
         player.render(g2D, 20, 20);
 
         g2D.setFont(new Font("Courier", Font.PLAIN, 40));
         g2D.drawString(startMessage, gameView.getWIDTH() / 5, gameView.getHeight() / 2);
         g2D.setFont(new Font("Courier", Font.PLAIN, 12));
         g2D.drawString("SPACE: Jump   ARROW_KEYS: Move   P: Pause   R: Reset   Q: Quit", 10, 10);
+        g2D.setColor(new Color(255, 223, 0));
+        g2D.setFont(new Font("Courier", Font.PLAIN, 40));
+        g2D.drawString("Coins: " + coinCount, GameView.WIDTH - 220, 30);
     }
 
     public Player getPlayer() {
@@ -93,6 +104,10 @@ public class GameCanvas extends JPanel {
         return floors;
     }
 
+    public ArrayList<Coin> getCoins() {
+        return coins;
+    }
+
     public int getBlockHeight() {
         return blockHeight;
     }
@@ -107,5 +122,13 @@ public class GameCanvas extends JPanel {
 
     public int getWallWidth() {
         return wallWidth;
+    }
+
+    public void setCoinCount(int coinCount) {
+        this.coinCount = coinCount;
+    }
+
+    public int getCoinCount() {
+        return coinCount;
     }
 }
