@@ -92,4 +92,20 @@ public class GameCanvas extends JPanel {
     public ArrayList<Floor> getFloors() {
         return floors;
     }
+
+    public int getBlockHeight() {
+        return blockHeight;
+    }
+
+    public int getBlockWidth() {
+        return blockWidth;
+    }
+
+    public int getWallHeight() {
+        return wallHeight;
+    }
+
+    public int getWallWidth() {
+        return wallWidth;
+    }
 }
