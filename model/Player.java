@@ -2,6 +2,7 @@ package model;
 
 import java.awt.Color;
 import java.awt.Rectangle;
+import view.GameCanvas;
 
 public class Player extends Environment{
 
@@ -19,5 +20,9 @@ public class Player extends Environment{
 
     public void resetStart() {
         updatePos(startX, startY);
+    }
+
+    public void grow(int x) {
+        GameCanvas.updatePlayerSize(x);
     }
 }

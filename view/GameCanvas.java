@@ -3,6 +3,7 @@ package view;
 import javax.swing.JPanel;
 
 import model.Player;
+import model.PowerUp;
 import model.Wall;
 import model.Block;
 import model.Coin;
@@ -25,12 +26,14 @@ public class GameCanvas extends JPanel {
     private ArrayList<Wall> walls;
     private ArrayList<Floor> floors;
     private ArrayList<Coin> coins;
+    private ArrayList<PowerUp> powerUps;
     private int coinCount = 0;
 
     final private int blockWidth = 60;
     final private int blockHeight = 60;
     final private int wallWidth = 120;
     final private int wallHeight = 240;
+    static private int playerSize = 20; 
 
     public GameCanvas(GameView gameView) {
         this.gameView = gameView;
@@ -41,6 +44,7 @@ public class GameCanvas extends JPanel {
         walls = new ArrayList<>();
         floors = new ArrayList<>();
         coins = new ArrayList<>();
+        powerUps = new ArrayList<>();
     }
 
     @Override
@@ -65,7 +69,11 @@ public class GameCanvas extends JPanel {
             each.render(g2D, 40, 60);
         }
 
-        player.render(g2D, 20, 20);
+        for (var each: powerUps) {
+            each.render(g2D, 40, 40);
+        }
+
+        player.render(g2D, playerSize, playerSize);
 
         g2D.setFont(new Font("Courier", Font.PLAIN, 40));
         g2D.drawString(startMessage, gameView.getWIDTH() / 5, gameView.getHeight() / 2);
@@ -108,6 +116,10 @@ public class GameCanvas extends JPanel {
         return coins;
     }
 
+    public ArrayList<PowerUp> getPowerUps() {
+        return powerUps;
+    }
+
     public int getBlockHeight() {
         return blockHeight;
     }
@@ -130,5 +142,13 @@ public class GameCanvas extends JPanel {
 
     public int getCoinCount() {
         return coinCount;
+    }
+
+    static public void updatePlayerSize(int size) {
+        playerSize = size;
+    }
+
+    static public int getPlayerSize() {
+        return playerSize;
     }
 }

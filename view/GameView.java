@@ -10,8 +10,8 @@ import model.Player;
 import model.Wall;
 import model.Block;
 import model.Coin;
-import model.Environment;
 import model.Floor;
+import model.PowerUp;
 import model.LandscapeBuilder;
 
 import java.awt.Container;
@@ -33,7 +33,6 @@ public class GameView implements Runnable {
 
     private Player player;
 
-    private int jumpHeight = 0;
     private boolean jumping = false;
     private boolean falling = true;
     private boolean left = false;
@@ -41,7 +40,6 @@ public class GameView implements Runnable {
     private int xSpeed = 10;
     private int decel = 0;
     private int accel = 0;
-    private boolean up = true;
 
     private LandscapeBuilder landscape;
     
@@ -49,6 +47,7 @@ public class GameView implements Runnable {
     private ArrayList<Wall> walls;
     private ArrayList<Floor> floors;
     private ArrayList<Coin> coins;
+    private ArrayList<PowerUp> powerUps;
 
     public GameView(JFrame window) {
         this.window = window;
@@ -73,6 +72,7 @@ public class GameView implements Runnable {
         walls = gameCanvas.getWalls();
         floors = gameCanvas.getFloors();
         coins = gameCanvas.getCoins();
+        powerUps = gameCanvas.getPowerUps();
         landscape.buildLandscape();
         player = gameCanvas.getPlayer();
     }
@@ -136,18 +136,7 @@ public class GameView implements Runnable {
         if (playerMovable) {
             player.updatePos(player.getX(), player.getY() - decel);
         } else {
-            for (var each: blocks) {
-                each.updatePos(each.getX(), each.getY() + decel);
-            }
-            for (var each: floors) {
-                each.updatePos(each.getX(), each.getY() + decel);
-            }
-            for (var each: walls) {
-                each.updatePos(each.getX(), each.getY() + decel);
-            }
-            for (var each: coins) {
-                each.updatePos(each.getX(), each.getY() + decel);
-            }
+            moveXY(0, decel);
         }
         decel -= 1;
         boolean breakout = false;
@@ -157,18 +146,7 @@ public class GameView implements Runnable {
                 if (playerMovable) {
                     player.updatePos(player.getX(), player.getY() + 1);
                 } else {
-                    for (var every: blocks) {
-                        every.updatePos(every.getX(), every.getY() - 1);
-                    }
-                    for (var every: floors) {
-                        every.updatePos(every.getX(), every.getY() - 1);
-                    }
-                    for (var every: walls) {
-                        every.updatePos(every.getX(), every.getY() - 1);
-                    }
-                    for (var every: coins) {
-                        every.updatePos(every.getX(), every.getY() - 1);
-                    }
+                    moveXY(0,-1);
                 }
             }
             if (breakout) return false;
@@ -180,18 +158,7 @@ public class GameView implements Runnable {
                 if (playerMovable) {
                     player.updatePos(player.getX(), player.getY() + 1);
                 } else {
-                    for (var every: blocks) {
-                        every.updatePos(every.getX(), every.getY() - 1);
-                    }
-                    for (var every: floors) {
-                        every.updatePos(every.getX(), every.getY() - 1);
-                    }
-                    for (var every: walls) {
-                        every.updatePos(every.getX(), every.getY() - 1);
-                    }
-                    for (var every: coins) {
-                        every.updatePos(every.getX(), every.getY() - 1);
-                    }
+                    moveXY(0, -1);
                 }
             }
             if (breakout) return false;
@@ -203,24 +170,13 @@ public class GameView implements Runnable {
                 if (playerMovable) {
                     player.updatePos(player.getX(), player.getY() + 1);
                 } else {
-                    for (var every: blocks) {
-                        every.updatePos(every.getX(), every.getY() - 1);
-                    }
-                    for (var every: floors) {
-                        every.updatePos(every.getX(), every.getY() - 1);
-                    }
-                    for (var every: walls) {
-                        every.updatePos(every.getX(), every.getY() - 1);
-                    }
-                    for (var every: coins) {
-                        every.updatePos(every.getX(), every.getY() - 1);
-                    }
+                    moveXY(0, -1);
                 }
             }
             if (breakout) return false;
         }
-
         coin();
+        grow();
 
         if (decel == 0) {
             return false;
@@ -234,18 +190,7 @@ public class GameView implements Runnable {
         if (playerMovable) {
             player.updatePos(player.getX(), player.getY() + accel);
         } else {
-            for (var each: blocks) {
-                each.updatePos(each.getX(), each.getY() - accel);
-            }
-            for (var each: floors) {
-                each.updatePos(each.getX(), each.getY() - accel);
-            }
-            for (var each: walls) {
-                each.updatePos(each.getX(), each.getY() - accel);
-            }
-            for (var each: coins) {
-                each.updatePos(each.getX(), each.getY() - accel);
-            }
+            moveXY(0, -accel);
         }
         accel += 1;
         falling = true;
@@ -256,18 +201,7 @@ public class GameView implements Runnable {
                 if (playerMovable) {
                     player.updatePos(player.getX(), player.getY() - 1);
                 } else {
-                    for (var every: blocks) {
-                        every.updatePos(every.getX(), every.getY() + 1);
-                    }
-                    for (var every: walls) {
-                        every.updatePos(every.getX(), every.getY() + 1);
-                    }
-                    for (var every: floors) {
-                        every.updatePos(every.getX(), every.getY() + 1);
-                    }
-                    for (var every: coins) {
-                        every.updatePos(every.getX(), every.getY() + 1);
-                    }
+                    moveXY(0, 1);
                 }
                 breakout = true;
                 accel = 1;
@@ -281,18 +215,7 @@ public class GameView implements Runnable {
                 if (playerMovable) {
                     player.updatePos(player.getX(), player.getY() - 1);
                 } else {
-                    for (var every: blocks) {
-                        every.updatePos(every.getX(), every.getY() + 1);
-                    }
-                    for (var every: walls) {
-                        every.updatePos(every.getX(), every.getY() + 1);
-                    }
-                    for (var every: floors) {
-                        every.updatePos(every.getX(), every.getY() + 1);
-                    }
-                    for (var every: coins) {
-                        every.updatePos(every.getX(), every.getY() + 1);
-                    }
+                    moveXY(0, 1);
                 }
                 breakout = true;
                 accel = 1;
@@ -306,18 +229,7 @@ public class GameView implements Runnable {
                 if (playerMovable) {
                     player.updatePos(player.getX(), player.getY() - 1);
                 } else {
-                    for (var every: blocks) {
-                        every.updatePos(every.getX(), every.getY() + 1);
-                    }
-                    for (var every: walls) {
-                        every.updatePos(every.getX(), every.getY() + 1);
-                    }
-                    for (var every: floors) {
-                        every.updatePos(every.getX(), every.getY() + 1);
-                    }
-                    for (var every: coins) {
-                        every.updatePos(every.getX(), every.getY() + 1);
-                    }
+                    moveXY(0, 1);
                 }
                 breakout = true;
                 accel = 1;
@@ -325,8 +237,8 @@ public class GameView implements Runnable {
             }
             if (breakout) break;
         }
-
         coin();
+        grow();
 
         if (player.getY() > HEIGHT) {
             player.resetStart();
@@ -340,18 +252,7 @@ public class GameView implements Runnable {
         if (playerMovable) {
             player.updatePos(player.getX() - xSpeed, player.getY());
         } else {
-            for (var each: blocks) {
-                each.updatePos(each.getX() + xSpeed, each.getY());
-            }
-            for (var each: walls) {
-                each.updatePos(each.getX() + xSpeed, each.getY());
-            }
-            for (var each: floors) {
-                each.updatePos(each.getX() + xSpeed, each.getY());
-            }
-            for (var each: coins) {
-                each.updatePos(each.getX() + xSpeed, each.getY());
-            }
+            moveXY(xSpeed, 0);
         }
         boolean breakout = false;
         for (var each: blocks) {
@@ -360,24 +261,15 @@ public class GameView implements Runnable {
                 if (playerMovable) {
                     player.updatePos(player.getX() + 1, player.getY());
                 } else {
-                    for (var every: blocks) {
-                        every.updatePos(every.getX() - 1, every.getY());
-                    }
-                    for (var every: walls) {
-                        every.updatePos(every.getX() - 1, every.getY());
-                    }
-                    for (var every: floors) {
-                        every.updatePos(every.getX() - 1, every.getY());
-                    }
-                    for (var every: coins) {
-                        every.updatePos(every.getX() - 1, every.getY());
-                    }
+                    moveXY(-1, 0);
                 }
             }
             if (breakout) break;
         }
 
         coin();
+        grow();
+
     }
 
     private void goRight() {
@@ -385,18 +277,7 @@ public class GameView implements Runnable {
         if (playerMovable) {
             player.updatePos(player.getX() + xSpeed, player.getY());
         } else {
-            for (var each: blocks) {
-                each.updatePos(each.getX() - xSpeed, each.getY());
-            }
-            for (var each: walls) {
-                each.updatePos(each.getX() - xSpeed, each.getY());
-            }
-            for (var each: floors) {
-                each.updatePos(each.getX() - xSpeed, each.getY());
-            }
-            for (var each: coins) {
-                each.updatePos(each.getX() - xSpeed, each.getY());
-            }
+            moveXY(-xSpeed, 0);
         }
         boolean breakout = false;
         for (var each: blocks) {
@@ -405,24 +286,15 @@ public class GameView implements Runnable {
                 if (playerMovable) {
                     player.updatePos(player.getX() - 1, player.getY());
                 } else {
-                    for (var every: blocks) {
-                        every.updatePos(every.getX() +1, every.getY());
-                    }
-                    for (var every: walls) {
-                        every.updatePos(every.getX() +1, every.getY());
-                    }
-                    for (var every: floors) {
-                        every.updatePos(every.getX() +1, every.getY());
-                    }
-                    for (var every: coins) {
-                        every.updatePos(every.getX() +1, every.getY());
-                    }
+                    moveXY(1, 0);
                 }
             }
             if (breakout) break;
         }
 
         coin();
+        grow();
+
     }
 
     private void coin() {
@@ -434,6 +306,36 @@ public class GameView implements Runnable {
                     each.setCollected(true);
                 }
             }
+        }
+    }
+
+    private void grow() {
+        for (var each: powerUps) {
+            if (player.getBounary().intersects(each.getBounary())) {
+                each.updateColor(gameCanvas.getBackground());
+                if (!each.getCollected()) {
+                    each.setCollected(true);
+                    player.grow(60);
+                }
+            }
+        }
+    }
+
+    private void moveXY(int x, int y) {
+        for (var each: blocks) {
+            each.updatePos(each.getX() + x, each.getY() + y);
+        }
+        for (var each: floors) {
+            each.updatePos(each.getX() + x, each.getY() + y);
+        }
+        for (var each: walls) {
+            each.updatePos(each.getX() + x, each.getY() + y);
+        }
+        for (var each: coins) {
+            each.updatePos(each.getX() + x, each.getY() + y);
+        }
+        for (var each: powerUps) {
+            each.updatePos(each.getX() + x, each.getY() + y);
         }
     }
 
@@ -455,10 +357,6 @@ public class GameView implements Runnable {
 
     public void setRight(boolean right) {
         this.right = right;
-    }
-
-    public void setJumpHeight(int jumpHeight) {
-        this.jumpHeight = jumpHeight;
     }
 
     public void setXSpeed(int xSpeed) {
@@ -498,6 +396,8 @@ public class GameView implements Runnable {
         walls.clear();
         floors.clear();
         coins.clear();
+        powerUps.clear();
+        player.grow(20);
         player.resetStart();
         landscape.buildLandscape();
     }

@@ -11,6 +11,7 @@ public class LandscapeBuilder {
     private ArrayList<Block> blocks;
     private ArrayList<Coin> coins;
     private ArrayList<Floor> floors;
+    private ArrayList<PowerUp> powerUps;
     GameCanvas gameCanvas;
 
     private int wallHeight;
@@ -24,6 +25,7 @@ public class LandscapeBuilder {
         blocks = this.gameCanvas.getBlocks();
         coins = this.gameCanvas.getCoins();
         floors = this.gameCanvas.getFloors();
+        powerUps = this.gameCanvas.getPowerUps();
         random = new Random();
         wallHeight = gameCanvas.getWallHeight();
         wallWidth = gameCanvas.getWallWidth();
@@ -45,6 +47,8 @@ public class LandscapeBuilder {
             floors.add(new Floor(i, GameView.HEIGHT - 400));
         }
 
+        powerUps.add(new PowerUp(240 * 2, GameView.HEIGHT - 500));
+        
         // pipe left
         for (int i = 520; i > 460 - (4 * 60); i -= 60) {
             blocks.add(new Block(240 * 3, GameView.HEIGHT - i));
@@ -89,6 +93,7 @@ public class LandscapeBuilder {
         for (int i = 250, k = GameView.HEIGHT * 2 - 60; i < 250 * 11; i += 240, k -= 150) {
             if (i > 250) coins.add(new Coin(i, k));
         }
+
     }
 
     public void randomBlock() {

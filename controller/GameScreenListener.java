@@ -13,8 +13,6 @@ import view.GameView;
 public class GameScreenListener implements KeyListener, MouseListener {
     private GameView gameView;
     private GameCanvas gameCanvas;
-    private Player player;
-    final private int xSpeed = 10;
     private boolean left = false;
     private boolean right = false;
     private boolean canJump = true;
@@ -22,7 +20,6 @@ public class GameScreenListener implements KeyListener, MouseListener {
     public GameScreenListener(GameView gameView) {
         this.gameView = gameView;
         gameCanvas = gameView.getCanvas();
-        player = gameCanvas.getPlayer();
     }
 
     @Override
@@ -46,7 +43,6 @@ public class GameScreenListener implements KeyListener, MouseListener {
                     // jump
                     if (canJump) {
                         if (!gameView.getFalling() && !gameView.getJumping()) {
-                            gameView.setJumpHeight(player.getY() - 210);
                             gameView.setJumping(true);
                             gameView.setAccel(1);
                             gameView.setDecel(20);
@@ -116,31 +112,19 @@ public class GameScreenListener implements KeyListener, MouseListener {
     }
 
     @Override
-    public void mouseClicked(MouseEvent e) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
     public void mousePressed(MouseEvent e) {
         gameView.addBlock(e.getX(), e.getY());
     }
 
     @Override
-    public void mouseReleased(MouseEvent e) {
-        // TODO Auto-generated method stub
-
-    }
+    public void mouseClicked(MouseEvent e) {}
 
     @Override
-    public void mouseEntered(MouseEvent e) {
-        // TODO Auto-generated method stub
-
-    }
+    public void mouseReleased(MouseEvent e) {}
 
     @Override
-    public void mouseExited(MouseEvent e) {
-        // TODO Auto-generated method stub
+    public void mouseEntered(MouseEvent e) {}
 
-    }
+    @Override
+    public void mouseExited(MouseEvent e) {}
 }
